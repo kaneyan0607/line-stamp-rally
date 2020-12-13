@@ -52,8 +52,30 @@ class Users_model extends CI_model
         $this->db->insert('users', $data); //usersテーブルにinsert PK
         return $this->db->insert('questionnaire_results', $data_sub); //アンケート結果テーブルにinsert FK
     }
-}
+    //urlencode() を使用する場合
+    //urlencode無しでtitleに日本語データを入力すると個別ページが開かない
+    //urlencodeを使うことで$slugに格納されたUTF-8エンコードされた日本語を認識する。
 
-//urlencode() を使用する場合
-//urlencode無しでtitleに日本語データを入力すると個別ページが開かない
-//urlencodeを使うことで$slugに格納されたUTF-8エンコードされた日本語を認識する。
+    public function set_stamp($id = FALSE)
+    {
+
+        // if ($id === FALSE) {
+        //     //SELECT * FROM users,questionnaire_results
+        //     $query = $this->db->get('questionnaire_results');
+
+        //     //結果を配列で取得する。
+        //     return $query->result_array();
+        // }
+
+        //UPDATE文
+        $this->db->set('stamp_result', "stamp_result + 1", false);
+        $this->db->where('ansswer_user_id', $id);
+        return $this->db->update('questionnaire_results'); // gives UPDATE `questionnaire_results` SET `stamp_result` = 'stamp_result+1' WHERE `id` = 2
+
+        // // SELECT * FROM questionnaire_results WHERE 'ansswer_user_id' = $id
+        // $query = $this->db->get_where('questionnaire_results', array('ansswer_user_id' => $id));
+
+        // //結果を1行配列で取得する
+        // return $query->row_array();
+    }
+}
