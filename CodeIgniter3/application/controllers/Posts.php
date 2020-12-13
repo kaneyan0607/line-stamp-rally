@@ -34,23 +34,22 @@ class Posts extends CI_Controller
         $data['users'] = $this->users_model->get_users($id);
 
         //↓取得した値に対しての正規表現による判定を後ほど実装
-        if ($id === NULL) {
-            echo '$idがNULLです';
-
+        if ($id !== NULL) {
             if (empty($data['users'])) { //もしも引数が空なら
                 // show_404();
                 echo "該当するユーザーがいません。";
                 // var_dump($status);
             } else {
-                echo '照合できました';
-                echo $data['users']['line_name'];
+                echo $data['users']['line_name'] . 'の照合ができました';
                 echo '<br>';
                 $status = array(
                     'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
                     'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => $data['users']['is_complete']
                 );
-                echo json_encode($status);
+                echo 'JSONENCODEしました: ' . json_encode($status);
             }
+        } else {
+            echo '$idがNULLです';
         }
 
         // var_dump($data['users']['line_id']);
@@ -67,11 +66,13 @@ class Posts extends CI_Controller
         $this->load->view('templates/footer');
     }
 
-    //データベースに初めて情報を入力するためのcreateメソッド
+
+
+    //データベースに初めて情報を入力するためのcreateメソッド　情報登録とともにスタンプが1つ付与
     public function create()
     {
         //errorの返り値
-        $status = array(
+        $create = array(
             'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL)
         );
 
@@ -81,7 +82,7 @@ class Posts extends CI_Controller
 
         $data['title'] = 'アンケートを登録する。';
 
-        //バリデーション設定。line_idとline_name、アンケート結果を必須入力、requiredに設定する。
+        //バリデーション。line_idとline_name、アンケート結果を必須入力、requiredに設定する。
         $this->form_validation->set_rules('line_id', 'Line_id', 'required');
         $this->form_validation->set_rules('line_name', 'Line_name', 'required');
         $this->form_validation->set_rules('answer', 'Answer', 'required');
@@ -92,11 +93,11 @@ class Posts extends CI_Controller
             $this->load->view('templates/header', $data);
             $this->load->view('line/create');
             $this->load->view('templates/footer');
-            echo json_encode($status);
         } else {
             //正しく入力された時は成功ページを表示する
             $this->users_model->set_answer();
             $this->load->view('line/success');
+            echo json_encode($create);
         }
     }
 }
