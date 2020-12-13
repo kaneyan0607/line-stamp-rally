@@ -15,6 +15,8 @@ class Posts extends CI_Controller
         // $this->load->helper('url_helper');
     }
 
+
+    //①ステータスの取得
     public function index($id = NULL) //$slug = NULL
     {
 
@@ -63,5 +65,38 @@ class Posts extends CI_Controller
         $this->load->view('templates/header', $data);
         $this->load->view('line/index', $data);
         $this->load->view('templates/footer');
+    }
+
+    //データベースに初めて情報を入力するためのcreateメソッド
+    public function create()
+    {
+        //errorの返り値
+        $status = array(
+            'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL)
+        );
+
+        //フォームヘルパーとフォームライブラリをロードする。
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+
+        $data['title'] = 'アンケートを登録する。';
+
+        //バリデーション設定。line_idとline_name、アンケート結果を必須入力、requiredに設定する。
+        $this->form_validation->set_rules('line_id', 'Line_id', 'required');
+        $this->form_validation->set_rules('line_name', 'Line_name', 'required');
+        $this->form_validation->set_rules('answer', 'Answer', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+
+            //submit前や不正な入力な時はフォームを表示する。
+            $this->load->view('templates/header', $data);
+            $this->load->view('line/create');
+            $this->load->view('templates/footer');
+            echo json_encode($status);
+        } else {
+            //正しく入力された時は成功ページを表示する
+            $this->users_model->set_answer();
+            $this->load->view('line/success');
+        }
     }
 }
