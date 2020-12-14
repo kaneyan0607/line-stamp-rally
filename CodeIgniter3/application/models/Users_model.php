@@ -11,17 +11,21 @@ class Users_model extends CI_model
     // $slugのエスケープ処理はQuery Builderがしてくれる
     {
         if ($id === FALSE) {
-            //SELECT * FROM users,questionnaire_results
-            $query = $this->db->get('users', 'questionnaire_results');
+            //SELECT * FROM users,stamp_results
+            $query = $this->db->get('users', 'stamp_results');
 
             //結果を配列で取得する。
             return $query->result_array();
         }
 
         // 次を生成:
-        // SELECT * FROM questionnaire_results JOIN users ON users.line_id = questionnaire_results.ansswer_user_id
-        $join = array('questionnaire_results', 'users.line_id = questionnaire_results.ansswer_user_id');
-        $query = $this->db->join($join[0], $join[1])->get_where('users', array('line_id' => $id));
+        // SELECT * FROM stamp_results JOIN users ON users.line_id = stamp_results.line_id
+        // 件数を取得
+        // $join = array('stamp_results', 'users.line_id = stamp_results.line_id');
+        // $query = $this->db->join($join[0], $join[1])->get_where('users', array('users.line_id' => $id));
+
+        $sql = "select users.*, COUNT(stamp_results.line_id) as cnt from users join stamp_results on users.line_id = stamp_results.line_id group by line_id having users.line_id = $id";
+        $query = $this->db->query($sql);
 
         //結果を1行配列で取得する
         return $query->row_array();
@@ -46,11 +50,11 @@ class Users_model extends CI_model
 
         $data_sub = array(
             'answer' => $slug_answer,
-            'ansswer_user_id' => $this->input->post('line_id')
+            'line_id' => $this->input->post('line_id')
         );
 
         $this->db->insert('users', $data); //usersテーブルにinsert PK
-        return $this->db->insert('questionnaire_results', $data_sub); //アンケート結果テーブルにinsert FK
+        return $this->db->insert('stamp_results', $data_sub); //アンケート結果テーブルにinsert FK
     }
     //urlencode() を使用する場合
     //urlencode無しでtitleに日本語データを入力すると個別ページが開かない
@@ -60,8 +64,8 @@ class Users_model extends CI_model
     {
 
         // if ($id === FALSE) {
-        //     //SELECT * FROM users,questionnaire_results
-        //     $query = $this->db->get('questionnaire_results');
+        //     //SELECT * FROM users,stamp_results
+        //     $query = $this->db->get('stamp_results');
 
         //     //結果を配列で取得する。
         //     return $query->result_array();
@@ -69,11 +73,11 @@ class Users_model extends CI_model
 
         //UPDATE文
         $this->db->set('stamp_result', "stamp_result + 1", false);
-        $this->db->where('ansswer_user_id', $id);
-        $query = $this->db->update('questionnaire_results');
-        return $query; // gives UPDATE `questionnaire_results` SET `stamp_result` = 'stamp_result+1' WHERE `id` = 2
-        // // SELECT * FROM questionnaire_results WHERE 'ansswer_user_id' = $id
-        // $query = $this->db->get_where('questionnaire_results', array('ansswer_user_id' => $id));
+        $this->db->where('line_id', $id);
+        $query = $this->db->update('stamp_results');
+        return $query; // gives UPDATE `stamp_results` SET `stamp_result` = 'stamp_result+1' WHERE `id` = 2
+        // // SELECT * FROM stamp_results WHERE 'line_id' = $id
+        // $query = $this->db->get_where('stamp_results', array('line_id' => $id));
 
         // //結果を1行配列で取得する
         // return $query->row_array();

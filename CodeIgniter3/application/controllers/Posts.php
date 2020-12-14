@@ -43,11 +43,11 @@ class Posts extends CI_Controller
             } else {
                 echo $data['users']['line_name'] . 'の照合ができました';
                 echo '<br>';
-                $status = array(
-                    'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
-                    'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => $data['users']['is_complete']
-                );
-                echo 'JSONENCODEしました: ' . json_encode($status);
+                // $status = array(
+                //     'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
+                //     'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => $data['users']['is_complete']
+                // );
+                // echo 'JSONENCODEしました: ' . json_encode($status);
             }
         } else {
             echo '$idがNULLです';
