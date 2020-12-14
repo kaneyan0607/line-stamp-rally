@@ -68,10 +68,11 @@ class Users_model extends CI_model
         // }
 
         //UPDATE文
-        $this->db->set('stamp_result', "stamp_result + 1", false);
+        $this->db->set('stamp_result', "stamp_result + 1", FALSE);
+        $this->db->set('modified_at(1)', 'NOW()', FALSE);
         $this->db->where('ansswer_user_id', $id);
-        return $this->db->update('questionnaire_results'); // gives UPDATE `questionnaire_results` SET `stamp_result` = 'stamp_result+1' WHERE `id` = 2
-
+        $query = $this->db->update('questionnaire_results');
+        return $query; // gives UPDATE `questionnaire_results` SET `stamp_result` = 'stamp_result+1' WHERE `id` = 2
         // // SELECT * FROM questionnaire_results WHERE 'ansswer_user_id' = $id
         // $query = $this->db->get_where('questionnaire_results', array('ansswer_user_id' => $id));
 

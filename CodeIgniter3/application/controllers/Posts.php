@@ -20,6 +20,7 @@ class Posts extends CI_Controller
     public function index($id = NULL) //$slug = NULL
     {
 
+        //フロントへの返り値
         $status = array(
             'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
             'is_answer' => 0, 'is_entry' => 0, 'stamnp_result' => 0, 'is_complete' => 0
@@ -43,7 +44,7 @@ class Posts extends CI_Controller
                 echo $data['users']['line_name'] . 'の照合ができました';
                 echo '<br>';
                 $status = array(
-                    'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
+                    'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
                     'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => $data['users']['is_complete']
                 );
                 echo 'JSONENCODEしました: ' . json_encode($status);
@@ -71,9 +72,9 @@ class Posts extends CI_Controller
     //データベースに初めて情報を入力するためのcreateメソッド　情報登録とともにスタンプが1つ付与
     public function create()
     {
-        //errorの返り値
+        //フロントへの返り値
         $status = array(
-            'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL)
+            'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => "")
         );
 
         //フォームヘルパーとフォームライブラリをロードする。
@@ -104,8 +105,9 @@ class Posts extends CI_Controller
     //スタンプを押していく処理 getで受け取るのはline_id
     public function stamp($id = NULL)
     {
+        //フロントへの返り値
         $status = array(
-            'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
+            'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
             'stamnp_result' => 0, 'is_complete' => 0
         );
 
@@ -124,21 +126,30 @@ class Posts extends CI_Controller
 
         //もしもスタンプの数が6以下ならスタンプを一つUPDATEする。
         $stamps = $data['users']['stamp_result'];
-        if ($stamps < 6) {
+        if (empty($stamps)) { //空判定
+            echo 'キャンペーンにエントリーしていません';
+        } elseif ($stamps < 6) {
             echo 'スタンプを一つ付与します';
-            $this->users_model->set_stamp($id);
-            $status = array(
-                'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
-                'stamnp_result' => $stamps, 'is_complete' => 0
-            );
+            $db['error'] = $this->users_model->set_stamp($id);
+            $status['stamnp_result'] = $stamps;
             echo json_encode($status);
+            echo '<br>';
+            var_dump($db);
         } else {
-            echo 'スタンプコンプリートです。';
-            $status = array(
-                'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
-                'stamnp_result' => $stamps, 'is_complete' => 1
-            );
+            echo 'スタンプコンプリートしています。';
+            $status['stamnp_result'] = $stamps;
+            $status['is_complete'] = 1;
             echo json_encode($status);
         }
+
+        //引数を指定してWHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
+        $data['users'] = $this->users_model->get_users($id);
+
+        echo '<br>';
+        echo '<br>';
+        echo '更新後に取得してきたアンケートデータ:';
+        var_dump($data);
+        echo '<br>';
+        echo '<br>';
     }
 }
