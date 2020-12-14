@@ -45,7 +45,7 @@ class Posts extends CI_Controller
                 echo '<br>';
                 $status = array(
                     'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
-                    'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => $data['users']['is_complete']
+                    'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => ""
                 );
                 echo 'JSONENCODEしました: ' . json_encode($status);
             }
