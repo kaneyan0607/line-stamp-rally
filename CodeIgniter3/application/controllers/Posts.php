@@ -45,8 +45,9 @@ class Posts extends CI_Controller
             $data['users'] = $this->users_model->get_users();
             if (empty($data['users'])) { //もしも引数が空なら
                 // echo "該当するユーザーがいません。";
+                $data['result'] = '該当するユーザーがいません。';
                 $this->load->view('templates/header', $data);
-                $this->load->view('line/failure');
+                $this->load->view('line/failure', $data);
                 $this->load->view('templates/footer');
             } else {
                 $data['status'] = $status; //フロントへの返り値
@@ -89,8 +90,8 @@ class Posts extends CI_Controller
         } else {
 
             //アンケート回答済みかの確認
-            $id = $this->input->post('line_id');
-            $data['users'] = $this->users_model->get_users($id);
+            // $id = $this->input->post('line_id');
+            $data['users'] = $this->users_model->get_users();
 
             if (empty($data['users'])) {
                 //正しく入力された時は成功ページを表示する
@@ -106,7 +107,7 @@ class Posts extends CI_Controller
     }
 
     //スタンプを押していく処理 getで受け取るのはline_id
-    public function stamp($id = NULL)
+    public function stamp()
     {
         //フロントへの返り値
         $status = array(
@@ -114,45 +115,63 @@ class Posts extends CI_Controller
             'stamnp_result' => 0, 'is_complete' => 0
         );
 
-        //現在のスタンプ情報を取得
+        //スタンプを押す前のスタンプ情報
         var_dump($status);
 
-        //引数を指定してWHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
-        $data['users'] = $this->users_model->get_users($id);
+        //フォームヘルパーとフォームライブラリをロードする。
+        $this->load->helper('form');
+        $this->load->library('form_validation');
 
-        echo '<br>';
-        echo '<br>';
-        echo '取得してきたアンケートデータ:';
-        var_dump($data);
-        echo '<br>';
-        echo '<br>';
+        // var_dump($status);
+        $data['title'] = 'スタンプを押す';
 
-        //もしもスタンプの数が6以下ならスタンプを一つUPDATEする。
-        $stamps = $data['users']['cnt'];
-        if (empty($stamps)) { //空判定
-            echo 'キャンペーンにエントリーしていません';
-        } elseif ($stamps < 6) {
-            echo 'スタンプを一つ付与します';
-            $db['error'] = $this->users_model->set_stamp($id);
-            $status['stamnp_result'] = $stamps;
-            echo json_encode($status);
-            echo '<br>';
-            var_dump($db);
+        //バリデーション。line_idを必須入力、requiredに設定する。
+        $this->form_validation->set_rules('line_id', 'Line_id', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+
+            //submit前や不正な入力な時はフォームを表示する。
+            $this->load->view('templates/header', $data);
+            $this->load->view('line/stamp');
+            $this->load->view('templates/footer');
         } else {
-            echo 'スタンプコンプリートしています。';
-            $status['stamnp_result'] = $stamps;
-            $status['is_complete'] = 1;
-            echo json_encode($status);
+            //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
+            $data['users'] = $this->users_model->get_users();
+            $stamps = $data['users']['cnt'];
+            if (empty($stamps)) { //もしも引数が空なら
+                $data['result'] = 'キャンペーンにエントリーしていません';
+                $this->load->view('templates/header', $data);
+                $this->load->view('line/failure');
+                $this->load->view('templates/footer');
+            } elseif ($stamps < 6) {
+                //もしもスタンプの数が6以下ならスタンプを一つUPDATEする。
+                echo 'スタンプを一つ付与します';
+                $db['error_log'] = $this->users_model->set_stamp();
+                $status['stamnp_result'] = $stamps;
+                echo json_encode($status);
+                $this->load->view('templates/header', $data);
+                $this->load->view('line/stamp');
+                $this->load->view('templates/footer');
+                // echo '<br>';
+                // var_dump($db);
+            } else {
+                echo 'スタンプコンプリートしています。';
+                // $data['result'] = 'スタンプコンプリートしています。';
+                // $this->load->view('templates/header', $data);
+                // $this->load->view('line/failure');
+                // $this->load->view('templates/footer');
+                $status['stamnp_result'] = $stamps;
+                $status['is_complete'] = 1;
+                echo json_encode($status);
+                $this->load->view('templates/header', $data);
+                $this->load->view('line/stamp');
+                $this->load->view('templates/footer');
+            }
         }
-
-        //引数を指定してWHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
-        $data['users'] = $this->users_model->get_users($id);
-
+        //スタンプを押した後のスタンプ情報
         echo '<br>';
         echo '<br>';
-        echo '更新後に取得してきたアンケートデータ:';
-        var_dump($data);
-        echo '<br>';
-        echo '<br>';
+        echo 'スタンプを押した後のスタンプ情報';
+        var_dump($status);
     }
 }

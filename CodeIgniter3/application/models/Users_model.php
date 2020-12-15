@@ -64,9 +64,10 @@ class Users_model extends CI_model
     //urlencode無しでtitleに日本語データを入力すると個別ページが開かない
     //urlencodeを使うことで$slugに格納されたUTF-8エンコードされた日本語を認識する。
 
-    public function set_stamp($id = FALSE)
+    public function set_stamp()
     {
 
+        $id = $this->input->post('line_id');
         // if ($id === FALSE) {
         //     //SELECT * FROM users,stamp_results
         //     $query = $this->db->get('stamp_results');

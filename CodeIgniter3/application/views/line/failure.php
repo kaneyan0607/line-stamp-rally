@@ -1,4 +1,5 @@
-<h3>該当するユーザーがいません。</h3>
+<h3><?php echo $result ?></h3>
 <div class="main">
     <p><?php echo anchor('posts/search', '続けて検索をする'); ?></p>
+    <p><?php echo anchor('posts/stamp', 'スタンプを登録する'); ?></p>
 </div>
