@@ -12,59 +12,51 @@ class Posts extends CI_Controller
         $this->load->model('users_model');
 
         //system/helpersのURLヘルパー関数をロード。ビューで行う。
-        // $this->load->helper('url_helper');
+        $this->load->helper('url_helper');
     }
 
 
     //①ステータスの取得
-    public function index($id = NULL) //$slug = NULL
+    public function search() //$slug = NULL
     {
-
         //フロントへの返り値
         $status = array(
             'result' => 1, 'error_info' => array('error_code' => NULL, 'error_message' => NULL),
             'is_answer' => 0, 'is_entry' => 0, 'stamnp_result' => 0, 'is_complete' => 0
         );
+        //フォームヘルパーとフォームライブラリをロードする。
+        $this->load->helper('form');
+        $this->load->library('form_validation');
 
-        var_dump($status);
+        // var_dump($status);
+        $data['title'] = '①ステータスの取得';
 
-        echo '<br>';
-        $data['title'] = '①ステータス取得';
+        //バリデーション。line_idを必須入力、requiredに設定する。
+        $this->form_validation->set_rules('line_id', 'Line_id', 'required');
 
-        //引数を指定してWHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
-        $data['users'] = $this->users_model->get_users($id);
+        if ($this->form_validation->run() === FALSE) {
 
-        //↓取得した値に対しての正規表現による判定を後ほど実装
-        if ($id !== NULL) {
-            if (empty($data['users'])) { //もしも引数が空なら
-                // show_404();
-                echo "該当するユーザーがいません。";
-                // var_dump($status);
-            } else {
-                echo $data['users']['line_name'] . 'の照合ができました';
-                echo '<br>';
-                // $status = array(
-                //     'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
-                //     'is_answer' => 1, 'is_entry' => 1, 'stamnp_result' => $data['users']['stamp_result'], 'is_complete' => $data['users']['is_complete']
-                // );
-                // echo 'JSONENCODEしました: ' . json_encode($status);
-            }
+            //submit前や不正な入力な時はフォームを表示する。
+            $this->load->view('templates/header', $data);
+            $this->load->view('line/search');
+            $this->load->view('templates/footer');
         } else {
-            echo '$idがNULLです';
+            //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
+            $data['users'] = $this->users_model->get_users();
+            if (empty($data['users'])) { //もしも引数が空なら
+                // echo "該当するユーザーがいません。";
+                $this->load->view('templates/header', $data);
+                $this->load->view('line/failure');
+                $this->load->view('templates/footer');
+            } else {
+                $data['status'] = $status; //フロントへの返り値
+                //正しく入力された時は検索結果ページを表示する
+                $this->load->view('templates/header', $data);
+                $this->load->view('line/index', $data);
+                $this->load->view('templates/footer');
+                // echo json_encode($status);
+            }
         }
-
-        // var_dump($data['users']['line_id']);
-        // var_dump('UserName:' . $data['users'][0]['line_name']);
-        // var_dump('DBのUserID:' . $data['users'][0]['line_id']);
-        echo '<br>';
-        echo '<br>';
-        var_dump('パラーメーター値:' . $id);
-        echo '<br>';
-        echo '<br>';
-        var_dump($data);
-        $this->load->view('templates/header', $data);
-        $this->load->view('line/index', $data);
-        $this->load->view('templates/footer');
     }
 
 
@@ -95,10 +87,21 @@ class Posts extends CI_Controller
             $this->load->view('line/create');
             $this->load->view('templates/footer');
         } else {
-            //正しく入力された時は成功ページを表示する
-            $this->users_model->set_answer();
-            $this->load->view('line/success');
-            echo json_encode($status);
+
+            //アンケート回答済みかの確認
+            $id = $this->input->post('line_id');
+            $data['users'] = $this->users_model->get_users($id);
+
+            if (empty($data['users'])) {
+                //正しく入力された時は成功ページを表示する
+                $data['result'] = 'アンケートにご回答いただきありがとうございます！スタンプが1つ付きました。';
+                $this->users_model->set_answer();
+                $this->load->view('line/success', $data);
+                echo 'JSONENCODE:' . json_encode($status);
+            } else {
+                $data['result'] = '既に回答済みです';
+                $this->load->view('line/success', $data);
+            }
         }
     }
 
@@ -125,7 +128,7 @@ class Posts extends CI_Controller
         echo '<br>';
 
         //もしもスタンプの数が6以下ならスタンプを一つUPDATEする。
-        $stamps = $data['users']['stamp_result'];
+        $stamps = $data['users']['cnt'];
         if (empty($stamps)) { //空判定
             echo 'キャンペーンにエントリーしていません';
         } elseif ($stamps < 6) {

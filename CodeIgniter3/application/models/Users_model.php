@@ -6,14 +6,20 @@ class Users_model extends CI_model
         $this->load->database();
     }
 
+
+    //ユーザー情報のみ取得
+
+    //スタンプの数を取得
+
     //ユーザー情報を取得
-    public function get_users($id = FALSE)
+    public function get_users()
     // $slugのエスケープ処理はQuery Builderがしてくれる
     {
+        $id = $this->input->post('line_id');
+
         if ($id === FALSE) {
-            //SELECT * FROM users,stamp_results
-            $sql = "SELECT * FROM `users` JOIN stamp_results ON users.line_id = stamp_results.line_id";
-            $query = $this->db->get($sql);
+            //SELECT * FROM users
+            $query = $this->db->get('users');
 
             //結果を配列で取得する。
             return $query->result_array();
@@ -23,29 +29,10 @@ class Users_model extends CI_model
         // SELECT * FROM stamp_results JOIN users ON users.line_id = stamp_results.line_id
         // 件数を取得
 
-        $sql = "select users.*, COUNT(stamp_results.line_id) as cnt from users join stamp_results on users.line_id = stamp_results.line_id group by line_id having users.line_id = $id";
-        $query = $this->db->query($sql);
-
-        if (!$query) {
-            log_message('debug', 'SELECTに失敗しました。');
-            $error = $this->db->error();
-            log_message('debug', print_r($error, true));
-            return null;
-        }
-
+        $sql = "select users.*, COUNT(stamp_results.line_id) as cnt from users join stamp_results on users.line_id = stamp_results.line_id group by line_id having users.line_id = ?";
+        $query = $this->db->query($sql, array($id));
         //結果を1行配列で取得する
         return $query->row_array();
-
-
-        // 次を生成:
-        // SELECT * FROM questionnaire_results JOIN users ON users.line_id = questionnaire_results.ansswer_user_id
-        // $select = array('users.*, COUNT(stamp_results.line_id)');
-        // $join = array('stamp_results', 'users.line_id = stamp_results.line_id');
-        // $groupby = array('line_id');
-        // $query = $this->db->select($select)->$this->db->join($join[0], $join[1])->$this->db->group_by($groupby)->having('users', array('line_id' => $id));
-
-        // //結果を1行配列で取得する
-        // return $query->row_array();
     }
 
     // アンケート結果を投稿するset_answer()メソッドを追加
@@ -62,11 +49,11 @@ class Users_model extends CI_model
 
         $data = array(
             'line_id' => $this->input->post('line_id'),
-            'line_name' => $slug_name
+            'line_name' => $slug_name,
+            'answer' => $slug_answer
         );
 
         $data_sub = array(
-            'answer' => $slug_answer,
             'line_id' => $this->input->post('line_id')
         );
 
@@ -89,9 +76,8 @@ class Users_model extends CI_model
         // }
 
         //UPDATE文
-        $this->db->set('stamp_result', "stamp_result + 1", false);
-        $this->db->where('line_id', $id);
-        $query = $this->db->update('stamp_results');
+        $this->db->set('line_id', $id);
+        $query = $this->db->insert('stamp_results');
         return $query; // gives UPDATE `stamp_results` SET `stamp_result` = 'stamp_result+1' WHERE `id` = 2
         // // SELECT * FROM stamp_results WHERE 'line_id' = $id
         // $query = $this->db->get_where('stamp_results', array('line_id' => $id));
