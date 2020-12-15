@@ -86,4 +86,31 @@ class Users_model extends CI_model
         // //結果を1行配列で取得する
         // return $query->row_array();
     }
+
+    public function get_stamp($id = FALSE)
+    {
+
+        if ($id === FALSE) {
+            //SELECT * FROM news
+            $query = $this->db->get('stamp_results');
+
+            //結果を配列で取得する。
+            return $query->result_array();
+        }
+
+        //こいつで最新のスタンプ投稿日を取得する
+        // $sql = "SELECT * FROM stamp_results WHERE line_id = ? ORDER BY created_at DESC LIMIT 1";
+
+        //こいつで最新のスタンプ投稿日の日付と年数を取得する
+        $sql = "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') FROM stamp_results WHERE line_id = ? ORDER BY created_at DESC LIMIT 1";
+        $query = $this->db->query($sql, array($id));
+        //結果を1行配列で取得する
+        return $query->row_array();
+
+        // // SELECT * FROM stamp_results WHERE line_id = $id
+        // $query = $this->db->get_where('stamp_results', array('line_id' => $id));
+
+        // //結果を1行配列で取得する
+        // return $query->result_array();
+    }
 }

@@ -174,4 +174,28 @@ class Posts extends CI_Controller
         echo 'スタンプを押した後のスタンプ情報';
         var_dump($status);
     }
+
+    //スタンプを本日押したのか確認する。GETでline_idを渡すと該当するline_idの押されたスタンプの最新の日付を取得する。
+    public function stamp_day($id = NULL)
+    {
+
+
+        $stamp_array = $this->users_model->get_stamp($id);
+        $stamp_day = $stamp_array["DATE_FORMAT(created_at, '%Y-%m-%d')"];
+
+        echo 'DBから取得したスタンプの日付です。';
+        var_dump($stamp_day);
+        echo '<br>';
+        echo 'PHPで取得した本日の日付です。';
+        $today = date('Y-m-d');
+        var_dump($today);
+        echo '<br>';
+        if (empty($stamp_day)) {
+            echo 'ユーザーがいません';
+        } elseif ($today == $stamp_day) {
+            echo '本日は既にスタンプを押しました';
+        } else {
+            echo '本日はまだスタンプを押して無いです！';
+        }
+    }
 }
