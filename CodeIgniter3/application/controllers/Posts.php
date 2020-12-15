@@ -40,13 +40,16 @@ class Posts extends CI_Controller
             //submit前や不正な入力な時はフォームを表示する。
             $this->load->view('line/search');
         } else {
+
             //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
             $data['users'] = $this->users_model->get_users();
             if (empty($data['users'])) { //もしも引数が空なら
+
                 // echo "該当するユーザーがいません。";
                 $data['result'] = '該当するユーザーがいません。';
                 $this->load->view('line/failure', $data);
             } else {
+
                 $data['status'] = $status; //フロントへの返り値
                 //正しく入力された時は検索結果ページを表示する
                 $this->load->view('line/index', $data);
@@ -82,17 +85,20 @@ class Posts extends CI_Controller
             //submit前や不正な入力な時はフォームを表示する。
             $this->load->view('line/create');
         } else {
+
             //アンケート回答済みかの確認
             // $id = $this->input->post('line_id');
             $data['users'] = $this->users_model->get_users();
 
             if (empty($data['users'])) {
+
                 //正しく入力された時は成功ページを表示する
                 $data['result'] = 'アンケートにご回答いただきありがとうございます！スタンプが1つ付きました。';
                 $this->users_model->set_answer();
                 $this->load->view('line/success', $data);
                 echo 'JSONENCODE:' . json_encode($status);
             } else {
+
                 $data['result'] = '既に回答済みです';
                 $this->load->view('line/success', $data);
             }
@@ -129,9 +135,11 @@ class Posts extends CI_Controller
             $data['users'] = $this->users_model->get_users();
             $stamps = $data['users']['cnt'];
             if (empty($stamps)) { //もしも引数が空なら
+
                 $data['result'] = 'キャンペーンにエントリーしていません';
                 $this->load->view('line/failure');
             } elseif ($stamps < 6) {
+
                 //もしもスタンプの数が6以下ならスタンプを一つUPDATEする。
                 echo 'スタンプを一つ付与します';
                 $db['error_log'] = $this->users_model->set_stamp();
@@ -144,6 +152,7 @@ class Posts extends CI_Controller
                 // echo '<br>';
                 // var_dump($db);
             } else {
+
                 echo 'スタンプコンプリートしています。';
                 $status['stamnp_result'] = $stamps;
                 $status['is_complete'] = 1;
@@ -157,8 +166,6 @@ class Posts extends CI_Controller
     //スタンプを本日押したのか確認する。GETでline_idを渡すと該当するline_idの押されたスタンプの最新の日付を取得する。
     public function stamp_day($id = NULL)
     {
-
-
         $stamp_array = $this->users_model->get_stamp($id);
         $stamp_day = $stamp_array["DATE_FORMAT(created_at, '%Y-%m-%d')"];
 
