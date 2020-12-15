@@ -64,6 +64,7 @@ class Users_model extends CI_model
     //urlencode無しでtitleに日本語データを入力すると個別ページが開かない
     //urlencodeを使うことで$slugに格納されたUTF-8エンコードされた日本語を認識する。
 
+    //スタンプを押す
     public function set_stamp()
     {
 
@@ -87,6 +88,7 @@ class Users_model extends CI_model
         // return $query->row_array();
     }
 
+    //最新のスタンプ投稿日を取得する
     public function get_stamp($id = FALSE)
     {
 

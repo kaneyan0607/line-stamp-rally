@@ -17,7 +17,7 @@ class Posts extends CI_Controller
 
 
     //①ステータスの取得
-    public function search() //$slug = NULL
+    public function search()
     {
         //フロントへの返り値
         $status = array(
@@ -30,6 +30,7 @@ class Posts extends CI_Controller
 
         // var_dump($status);
         $data['title'] = '①ステータスの取得';
+        $this->load->view('templates/header', $data);
 
         //バリデーション。line_idを必須入力、requiredに設定する。
         $this->form_validation->set_rules('line_id', 'Line_id', 'required');
@@ -37,32 +38,27 @@ class Posts extends CI_Controller
         if ($this->form_validation->run() === FALSE) {
 
             //submit前や不正な入力な時はフォームを表示する。
-            $this->load->view('templates/header', $data);
             $this->load->view('line/search');
-            $this->load->view('templates/footer');
         } else {
             //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
             $data['users'] = $this->users_model->get_users();
             if (empty($data['users'])) { //もしも引数が空なら
                 // echo "該当するユーザーがいません。";
                 $data['result'] = '該当するユーザーがいません。';
-                $this->load->view('templates/header', $data);
                 $this->load->view('line/failure', $data);
-                $this->load->view('templates/footer');
             } else {
                 $data['status'] = $status; //フロントへの返り値
                 //正しく入力された時は検索結果ページを表示する
-                $this->load->view('templates/header', $data);
                 $this->load->view('line/index', $data);
-                $this->load->view('templates/footer');
                 // echo json_encode($status);
             }
         }
+        $this->load->view('templates/footer');
     }
 
 
 
-    //データベースに初めて情報を入力するためのcreateメソッド　情報登録とともにスタンプが1つ付与
+    //②データベースに初めて情報を入力するためのcreateメソッド　情報登録とともにスタンプが1つ付与
     public function create()
     {
         //フロントへの返り値
@@ -75,6 +71,7 @@ class Posts extends CI_Controller
         $this->load->library('form_validation');
 
         $data['title'] = 'アンケートを登録する。';
+        $this->load->view('templates/header', $data);
 
         //バリデーション。line_idとline_name、アンケート結果を必須入力、requiredに設定する。
         $this->form_validation->set_rules('line_id', 'Line_id', 'required');
@@ -82,13 +79,9 @@ class Posts extends CI_Controller
         $this->form_validation->set_rules('answer', 'Answer', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-
             //submit前や不正な入力な時はフォームを表示する。
-            $this->load->view('templates/header', $data);
             $this->load->view('line/create');
-            $this->load->view('templates/footer');
         } else {
-
             //アンケート回答済みかの確認
             // $id = $this->input->post('line_id');
             $data['users'] = $this->users_model->get_users();
@@ -104,9 +97,10 @@ class Posts extends CI_Controller
                 $this->load->view('line/success', $data);
             }
         }
+        $this->load->view('templates/footer');
     }
 
-    //スタンプを押していく処理 getで受け取るのはline_id
+    //③スタンプを押していく処理 getで受け取るのはline_id
     public function stamp()
     {
         //フロントへの返り値
@@ -115,64 +109,49 @@ class Posts extends CI_Controller
             'stamnp_result' => 0, 'is_complete' => 0
         );
 
-        //スタンプを押す前のスタンプ情報
-        var_dump($status);
-
         //フォームヘルパーとフォームライブラリをロードする。
         $this->load->helper('form');
         $this->load->library('form_validation');
 
         // var_dump($status);
         $data['title'] = 'スタンプを押す';
+        $this->load->view('templates/header', $data);
 
         //バリデーション。line_idを必須入力、requiredに設定する。
         $this->form_validation->set_rules('line_id', 'Line_id', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-
             //submit前や不正な入力な時はフォームを表示する。
-            $this->load->view('templates/header', $data);
             $this->load->view('line/stamp');
-            $this->load->view('templates/footer');
         } else {
+
             //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
             $data['users'] = $this->users_model->get_users();
             $stamps = $data['users']['cnt'];
             if (empty($stamps)) { //もしも引数が空なら
                 $data['result'] = 'キャンペーンにエントリーしていません';
-                $this->load->view('templates/header', $data);
                 $this->load->view('line/failure');
-                $this->load->view('templates/footer');
             } elseif ($stamps < 6) {
                 //もしもスタンプの数が6以下ならスタンプを一つUPDATEする。
                 echo 'スタンプを一つ付与します';
                 $db['error_log'] = $this->users_model->set_stamp();
+                //スタンプを押した後にスタンプの数を再度カウントして代入
+                $data['users'] = $this->users_model->get_users();
+                $stamps = $data['users']['cnt'];
                 $status['stamnp_result'] = $stamps;
                 echo json_encode($status);
-                $this->load->view('templates/header', $data);
                 $this->load->view('line/stamp');
-                $this->load->view('templates/footer');
                 // echo '<br>';
                 // var_dump($db);
             } else {
                 echo 'スタンプコンプリートしています。';
-                // $data['result'] = 'スタンプコンプリートしています。';
-                // $this->load->view('templates/header', $data);
-                // $this->load->view('line/failure');
-                // $this->load->view('templates/footer');
                 $status['stamnp_result'] = $stamps;
                 $status['is_complete'] = 1;
                 echo json_encode($status);
-                $this->load->view('templates/header', $data);
                 $this->load->view('line/stamp');
-                $this->load->view('templates/footer');
             }
         }
-        //スタンプを押した後のスタンプ情報
-        echo '<br>';
-        echo '<br>';
-        echo 'スタンプを押した後のスタンプ情報';
-        var_dump($status);
+        $this->load->view('templates/footer');
     }
 
     //スタンプを本日押したのか確認する。GETでline_idを渡すと該当するline_idの押されたスタンプの最新の日付を取得する。
@@ -183,6 +162,8 @@ class Posts extends CI_Controller
         $stamp_array = $this->users_model->get_stamp($id);
         $stamp_day = $stamp_array["DATE_FORMAT(created_at, '%Y-%m-%d')"];
 
+        var_dump($stamp_array);
+        echo '<br>';
         echo 'DBから取得したスタンプの日付です。';
         var_dump($stamp_day);
         echo '<br>';
