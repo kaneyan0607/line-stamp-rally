@@ -17,6 +17,6 @@ echo form_open('posts/search');
 <label for="line_id">line_id</label>
 <input type="text" name="line_id"><br>
 
-<input type="submit" name="submit" value="送信" />
+<input type="submit" name="submit" value="検索" />
 
 </form>
