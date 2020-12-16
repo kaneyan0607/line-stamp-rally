@@ -26,7 +26,7 @@ date_default_timezone_set('Asia/Tokyo');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://localhost:8888/line-stamp-rally/CodeIgniter3';
+$config['base_url'] = 'http://localhost:8888/line-stamp-rally/CodeIgniter3/';
 
 /*
 |--------------------------------------------------------------------------
