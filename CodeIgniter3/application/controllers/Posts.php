@@ -22,7 +22,7 @@ class Posts extends CI_Controller
         //フロントへの返り値
         $status = array(
             'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
-            'is_answer' => 0, 'is_entry' => 0, 'stamnp_result' => 0, 'is_complete' => 0
+            'answer' => 0, 'entry' => 0, 'stamnp' => 0, 'complete' => 0
         );
         //フォームヘルパーとフォームライブラリをロードする。
         $this->load->helper('form');
@@ -56,6 +56,10 @@ class Posts extends CI_Controller
 
             //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
             $data['users'] = $this->users_model->get_users();
+            var_dump($data);
+            echo '<br>';
+            echo '入力値:';
+            var_dump($id);
             if (empty($data['users'])) { //もしも引数が空なら
 
                 // echo "該当するユーザーがいません。";
@@ -69,12 +73,12 @@ class Posts extends CI_Controller
                 //もしもスタンプの数が6個あればコンプリートフラグを立てる。
                 $stamps = $data['users']['cnt']; //スタンプの数
                 if ($stamps === "6") {
-                    $status['is_complete'] = 1;
+                    $status['complete'] = 1;
                 }
 
-                $status['is_answer'] = 1;
-                $status['is_entry'] = 1;
-                $status['stamnp_result'] = $stamps;
+                $status['answer'] = 1;
+                $status['entry'] = 1;
+                $status['stamnp'] = $stamps;
 
                 $data['status'] = $status; //フロントへの返り値(viewでjsonencodeしている。)
                 //正しく入力された時は検索結果ページを表示する
@@ -136,12 +140,17 @@ class Posts extends CI_Controller
 
             //アンケート回答済みかの確認
             $data['users'] = $this->users_model->get_users();
+            echo 'アンケート回答済みかの確認:';
+            var_dump($data);
 
             if (empty($data['users'])) { //回答していなかったら
 
                 //正しく入力された時は成功ページを表示する
                 $data['result'] = 'アンケートにご回答いただきありがとうございます！スタンプが1つ付きました。';
-                $this->users_model->set_answer();
+                $data['id'] = $this->users_model->set_answer(); //アンケートに登録と同時にinsertしたカラムのpkを取得
+
+                $this->users_model->set_stamp($data['id']['id']); //スタンプを登録
+
                 $this->load->view('line/success', $data);
                 $status['error_info']['error_code'] = "";
                 $status['result'] = 1;
@@ -164,7 +173,7 @@ class Posts extends CI_Controller
         //フロントへの返り値のための変数を準備
         $status = array(
             'result' => 1, 'error_info' => array('error_code' => "", 'error_message' => ""),
-            'stamnp_result' => 0, 'is_complete' => 0
+            'stamnp' => 0, 'complete' => 0
         );
 
         //フォームヘルパーとフォームライブラリをロードする。
@@ -205,11 +214,11 @@ class Posts extends CI_Controller
                 $status['error_info']['error_message'] = "キャンペーンにエントリーしていません";
                 echo json_encode($status, JSON_UNESCAPED_UNICODE);
                 $data['result'] = 'キャンペーンにエントリーしていません';
-                $this->load->view('line/failure');
+                $this->load->view('line/failure', $data);
             } elseif ($stamps < 6) { //スタンプが6つ以下か判定
 
                 //スタンプを本日押したのか確認する。
-                $stamp_array = $this->users_model->get_stamp();
+                $stamp_array = $this->users_model->get_stamp($data['users']['id']);
                 $stamp_day = $stamp_array["DATE_FORMAT(created_at, '%Y-%m-%d')"];
                 $today = date('Y-m-d');
 
@@ -221,12 +230,12 @@ class Posts extends CI_Controller
                 } else {
                     //もしもスタンプの数が6以下ならスタンプを一つINSERTする。
                     echo 'スタンプを一つ付与します';
-                    $db['error_log'] = $this->users_model->set_stamp();
+                    $data['stamp_log'] = $this->users_model->set_stamp($data['users']['id']); //ユーザー情報のPKであるidを渡す
 
                     //スタンプを押した後にスタンプの数を再度カウントして代入
                     $data['users'] = $this->users_model->get_users();
                     $stamps = $data['users']['cnt'];
-                    $status['stamnp_result'] = $stamps;
+                    $status['stamnp'] = $stamps;
 
                     echo json_encode($status);
                     $this->load->view('line/stamp');
@@ -234,8 +243,8 @@ class Posts extends CI_Controller
             } else {
 
                 echo 'スタンプ6つでコンプリートしています。';
-                $status['stamnp_result'] = $stamps;
-                $status['is_complete'] = 1;
+                $status['stamnp'] = $stamps;
+                $status['complete'] = 1;
                 echo json_encode($status);
                 $this->load->view('line/stamp');
             }

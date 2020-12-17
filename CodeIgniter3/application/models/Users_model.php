@@ -20,7 +20,7 @@ class Users_model extends CI_model
             return $query->result_array();
         }
 
-        $sql = "select users.*, COUNT(stamp_results.line_id) as cnt from users join stamp_results on users.line_id = stamp_results.line_id group by line_id having users.line_id = ?";
+        $sql = "select users.*, COUNT(stamp_results.users_id) as cnt from users join stamp_results on users.id = stamp_results.users_id group by users_id having users.line_id = ? ";
         $query = $this->db->query($sql, array($id));
         //結果を1行配列で取得する
         return $query->row_array();
@@ -33,42 +33,42 @@ class Users_model extends CI_model
         //アンサーセクションの時にコントローラーのコントラクトでロードするように設定しているのでここで明示的にロードしなくてもよい。
         $this->load->helper('url');
 
+        $line_id = url_title($this->input->post('line_id'));
         $slug_name = url_title($this->input->post('line_name'));
         $slug_answer = url_title($this->input->post('answer'));
 
-        $data = array(
-            'line_id' => $this->input->post('line_id'),
+        $users = array(
+            'line_id' => $line_id,
             'line_name' => $slug_name,
             'answer' => $slug_answer
         );
 
-        $data_sub = array(
-            'line_id' => $this->input->post('line_id')
-        );
-
-        $this->db->insert('users', $data); //usersテーブルにinsert PK
-        return $this->db->insert('stamp_results', $data_sub); //アンケート結果テーブルにinsert FK
+        $this->db->insert('users', $users); //usersテーブルにinsert PK
+        // SELECT id FROM users WHERE 'line_id' = $line_id
+        $this->db->select('id');
+        $query = $this->db->get_where('users', array('line_id' => $line_id)); //アンケート登録後、PKのidを取得するためにselect文を実行
+        //結果を1行配列で取得する
+        return $query->row_array();
     }
     //urlencode() を使用する場合
     //urlencode無しでtitleに日本語データを入力すると個別ページが開かない
     //urlencodeを使うことで$slugに格納されたUTF-8エンコードされた日本語を認識する。
 
     //スタンプを押す
-    public function set_stamp()
+    public function set_stamp($id)
     {
 
-        $id = $this->input->post('line_id');
+        // $id = $this->input->post('line_id');
 
         //UPDATE文
-        $this->db->set('line_id', $id);
+        $this->db->set('users_id', $id);
         $query = $this->db->insert('stamp_results');
         return $query;
     }
 
     //最新のスタンプ投稿日を取得する
-    public function get_stamp()
+    public function get_stamp($id)
     {
-        $id = $this->input->post('line_id');
 
         if ($id === FALSE) {
             //SELECT * FROM news
@@ -79,7 +79,7 @@ class Users_model extends CI_model
         }
 
         //最新のスタンプ投稿日の日付と年数を取得する
-        $sql = "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') FROM stamp_results WHERE line_id = ? ORDER BY created_at DESC LIMIT 1";
+        $sql = "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') FROM stamp_results WHERE users_id = ? ORDER BY created_at DESC LIMIT 1";
         $query = $this->db->query($sql, array($id));
         //結果を1行配列で取得する
         return $query->row_array();
