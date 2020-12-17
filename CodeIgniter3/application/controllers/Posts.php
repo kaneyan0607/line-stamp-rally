@@ -107,8 +107,8 @@ class Posts extends CI_Controller
         $this->form_validation->set_rules('answer', 'Answer', 'required');
 
         $id = $this->input->post('line_id');
-        $name = $this->input->post('line_name');
-        $ansswer = $this->input->post('answer');
+        $name_cnt = mb_strlen($this->input->post('line_name')); //mb_strlenは全角、半角も一文字判定
+        $answer = $this->input->post('answer');
 
         if ($this->form_validation->run() === FALSE) { //入力フォームに値が入ったかの判定
 
@@ -121,12 +121,12 @@ class Posts extends CI_Controller
             $status['error_info']['error_message'] = "line_idに使用できる文字は、半角英字 (小文字)、数字、「.」、 「-」、「_」となります。また、文字数は2~40文字以内で入力してください。";
             echo json_encode($status, JSON_UNESCAPED_UNICODE);
             $this->load->view('line/create');
-        } elseif (!preg_match("/^.{1,20}$/", $name)) { //line_nameの正規表現判定
+        } elseif (1 < $name_cnt && $name_cnt > 21) { //line_nameの文字数判定
 
             $status['error_info']['error_message'] = "line_nameは1文字以上20文字以内です";
             echo json_encode($status, JSON_UNESCAPED_UNICODE);
             $this->load->view('line/create');
-        } elseif (!('北海道' === $ansswer || '青森県' === $ansswer || '岩手県' === $ansswer || '宮城県' === $ansswer || '秋田県' === $ansswer || '山形県' === $ansswer || '福島県' === $ansswer || '茨城県' === $ansswer || '栃木県' === $ansswer || '群馬県' === $ansswer || '埼玉県' === $ansswer || '千葉県' === $ansswer || '東京都' === $ansswer || '神奈川県' === $ansswer || '新潟県' === $ansswer || '富山県' === $ansswer || '石川県' === $ansswer || '福井県' === $ansswer || '山梨県' === $ansswer || '長野県' === $ansswer || '岐阜県' === $ansswer || '静岡県' === $ansswer || '愛知県' === $ansswer || '三重県' === $ansswer || '滋賀県' === $ansswer || '京都府' === $ansswer || '大阪府' === $ansswer || '兵庫県' === $ansswer || '奈良県' === $ansswer || '和歌山県' === $ansswer || '鳥取県' === $ansswer || '島根県' === $ansswer || '岡山県' === $ansswer || '広島県' === $ansswer || '山口県' === $ansswer || '徳島県' === $ansswer || '香川県' === $ansswer || '愛媛県' === $ansswer || '高知県' === $ansswer || '福岡県' === $ansswer || '佐賀県' === $ansswer || '長崎県' === $ansswer || '熊本県' === $ansswer || '大分県' === $ansswer || '宮崎県' === $ansswer || '鹿児島県' === $ansswer || '沖縄県' === $ansswer)) {
+        } elseif (!('北海道' === $answer || '青森県' === $answer || '岩手県' === $answer || '宮城県' === $answer || '秋田県' === $answer || '山形県' === $answer || '福島県' === $answer || '茨城県' === $answer || '栃木県' === $answer || '群馬県' === $answer || '埼玉県' === $answer || '千葉県' === $answer || '東京都' === $answer || '神奈川県' === $answer || '新潟県' === $answer || '富山県' === $answer || '石川県' === $answer || '福井県' === $answer || '山梨県' === $answer || '長野県' === $answer || '岐阜県' === $answer || '静岡県' === $answer || '愛知県' === $answer || '三重県' === $answer || '滋賀県' === $answer || '京都府' === $answer || '大阪府' === $answer || '兵庫県' === $answer || '奈良県' === $answer || '和歌山県' === $answer || '鳥取県' === $answer || '島根県' === $answer || '岡山県' === $answer || '広島県' === $answer || '山口県' === $answer || '徳島県' === $answer || '香川県' === $answer || '愛媛県' === $answer || '高知県' === $answer || '福岡県' === $answer || '佐賀県' === $answer || '長崎県' === $answer || '熊本県' === $answer || '大分県' === $answer || '宮崎県' === $answer || '鹿児島県' === $answer || '沖縄県' === $answer)) {
 
             //都道府県の判定
             $status['error_info']['error_message'] = "line_nameは1文字以上20文字以内です";
