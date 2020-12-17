@@ -56,10 +56,6 @@ class Posts extends CI_Controller
 
             //WHERE line_id = $id のusersとアンケート情報をモデル経由で連想配列として取得する。
             $data['users'] = $this->users_model->get_users();
-            var_dump($data);
-            echo '<br>';
-            echo '入力値:';
-            var_dump($id);
             if (empty($data['users'])) { //もしも引数が空なら
 
                 // echo "該当するユーザーがいません。";
