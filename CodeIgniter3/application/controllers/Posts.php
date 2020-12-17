@@ -136,16 +136,14 @@ class Posts extends CI_Controller
 
             //アンケート回答済みかの確認
             $data['users'] = $this->users_model->get_users();
-            echo 'アンケート回答済みかの確認:';
-            var_dump($data);
 
             if (empty($data['users'])) { //回答していなかったら
 
                 //正しく入力された時は成功ページを表示する
                 $data['result'] = 'アンケートにご回答いただきありがとうございます！スタンプが1つ付きました。';
-                $data['id'] = $this->users_model->set_answer(); //アンケートに登録と同時にinsertしたカラムのpkを取得
+                $data['id'] = $this->users_model->set_answer(); //アンケートに登録と同時にinsertしたカラムのpkのidを取得
 
-                $this->users_model->set_stamp($data['id']['id']); //スタンプを登録
+                $this->users_model->set_stamp($data['id']['id']); //スタンプを1つ登録
 
                 $this->load->view('line/success', $data);
                 $status['error_info']['error_code'] = "";

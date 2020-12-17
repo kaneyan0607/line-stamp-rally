@@ -58,8 +58,6 @@ class Users_model extends CI_model
     public function set_stamp($id)
     {
 
-        // $id = $this->input->post('line_id');
-
         //UPDATE文
         $this->db->set('users_id', $id);
         $query = $this->db->insert('stamp_results');
