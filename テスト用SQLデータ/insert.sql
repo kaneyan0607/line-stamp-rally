@@ -1,5 +1,5 @@
 INSERT INTO users
-  (testline_id, line_name, answer)
+  (line_id, line_name, answer)
 VALUES
 ('test11','test1','country1'),
 ('test12','test2','country2'),
